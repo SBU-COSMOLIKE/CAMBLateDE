@@ -11,7 +11,8 @@ The available parametrization are:
 6) Cubic bin w        - 2, 3 and 5 bins
 7) Hyperbolic tangent - Equation 21 in Planck's paper arXiv 1502.01590 
 8) Constant bin w     - Arbitrary numbers of bins
+9) Chebyshev expansion of w - see arXiv 2405.04216v1 (Obs: no smooth transition of w to C.C. regime)
 
 ## Using the LateDE CAMB
-Examples of the parametrizations are provided at `docs/LateDE_demo.ipynb`
+Examples of the parametrizations are provided at `docs/LateDE_demo.ipynb`  
 Extensive tests of this modified CAMB is given at `docs/LateDE_test.ipynb`
