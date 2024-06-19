@@ -15,6 +15,7 @@ module LateDE
         real(dl) :: w0,w1,w2,w3,w4,w5,w6,w7,w8,w9
         real(dl) :: z1,z2,z3,z4,z5,z6,z7,z8,z9,z10
         real(dl) :: sigma ! JVR: added tanh parameters
+        real(dl) :: C_0, C_1, C_2, C_3
         contains
         procedure :: ReadParams => TLateDE_ReadParams
         procedure :: Init => TLateDE_Init
@@ -40,6 +41,7 @@ module LateDE
         real(dl) :: Delta_z6, Delta_z7, Delta_z8, Delta_z9, Delta_z10
         real(dl) :: Delta_w1, Delta_w2, Delta_w3, Delta_w4, Delta_w5
         real(dl) :: Delta_w6, Delta_w7, Delta_w8, Delta_w9, Delta_w10
+        real(dl) :: T_0, T_1, T_2, T_3, x
         integer  :: i
 
         w_de = 0
@@ -498,7 +500,24 @@ module LateDE
                 else
                     w_de = -1.0_dl
                 end if
-            end do                 
+            end do                
+        else if ( this%DEmodel == 19 ) then
+            ! Chebyshev series up to 4 terms from Eq 2.5 of arXiv 2405.04216v1
+            ! I'm adopting z_min = z1 and z_max = z2
+            z = 1._dl/a - 1._dl
+            if ( z > this%z1 .and. z < this%z2 ) then
+                x = 1.0_dl - 2.0_dl * ((this%z2 - z)/(this%z2 - this%z1))
+                T_0 = 1.0_dl
+                T_1 = x
+                T_2 = 2.0_dl * x**2.0_dl - 1.0_dl
+                T_3 = x * (4.0_dl * x**2.0_dl - 3.0_dl)
+                w_de = -(this%C_0*T_0 + this%C_1*T_1 + this%C_2*T_2 + this%C_3*T_3)
+            else
+                ! They use a smooth transition to the Cosmological Constant regime
+                ! given by w_de = -1+(B_0 + B_1*u)*exp(-u**2/Delta**2) where u = log((1+z)/(1+z_max))
+                ! Delta = ?
+                w_de = -1.0_dl      
+           end if
         else        
             stop "[Late Fluid DE @TLateDE_w_de] Invalid Dark Energy Model"   
         end if
@@ -533,6 +552,7 @@ module LateDE
         real(dl) :: wa4,waa4,waaa4, A04,A14,A24,A34 ! factors for the 5th bin
         real(dl) :: wa5,wa6,wa7,wa8,wa9
         real(dl) :: faci, temp 
+        real(dl) :: T_1, T_2, T_3, C_0_not_free, x
         integer  :: i, j
 
         grho_de = 0
@@ -1220,7 +1240,20 @@ module LateDE
                 faci = faci * (1.0_dl + this%z_knot(this%max_num_of_bins))**(3.0_dl * (this%w_knot(this%max_num_of_bins) - (-1.0_dl)))
                 grho_de = grho_de_today * faci
             end if
-
+        else if ( this%DEmodel == 19 ) then
+            ! DHFS: Chebyshev series up to 4 terms from Eq 2.6 and 2.7 of arXiv 2405.04216v1
+            ! DHFS: I'm adopting z_min = z1 and z_max = z2
+            z = 1._dl/a - 1._dl
+            C_0_not_free = 1.0_dl + this%C_1 + this%C_3 - this%C_2
+            if ( z > this%z1 .and. z < this%z2 ) then
+                x = 1.0_dl - 2.0_dl * ((this%z2 - z)/(this%z2 - this%z1))
+                T_1 = x
+                T_2 = 2.0_dl * x**2.0_dl - 1.0_dl
+                T_3 = x * (4.0_dl * x**2.0_dl - 3.0_dl)
+                grho_de = grho_de_today*(C_0_not_free + this%C_1*T_1 + this%C_2*T_2 + this%C_3*T_3)
+            else
+                grho_de = grho_de_today*(1.0_dl + 2.0_dl * (this%C_1 + this%C_3))
+            end if
         else 
             stop "[Late Fluid DE @TLateDE_grho_de] Invalid Dark Energy Model"
         end if
@@ -1267,10 +1300,7 @@ module LateDE
             !'w0wa'
             w  = this%w0
             wa = this%w1
-        else if (this%DEmodel==1  .or. this%DEmodel==3  .or. this%DEmodel==4  .or. this%DEmodel==5  .or. &
-                 this%DEmodel==6  .or. this%DEmodel==7  .or. this%DEmodel==8  .or. this%DEmodel==9  .or. &
-                 this%DEmodel==10 .or. this%DEmodel==11 .or. this%DEmodel==12 .or. this%DEmodel==13 .or. & 
-                 this%DEmodel==14 .or. this%DEmodel==15 .or. this%DEmodel==16 .or. this%DEmodel==17 .or. this%DEmodel==18) then
+        else if (this%DEmodel /= 2) then
             w  = this%w0
             wa = 0
         else
