@@ -18,6 +18,17 @@ class DarkEnergyModel(F2003Class):
     def validate_params(self):
         return True
 
+# JVR Modification: Implementing the PC model
+# PC is just a mapping between the alphas and the w_i
+# So just use the same model binw and set alpha_i instead of w_i
+PCs = np.array([
+    [0.97597922, 0.21318807, 0.04285546, 0.01218697, 0.00550414],
+    [-0.21443583,  0.90363374,  0.35153986,  0.10769025,  0.04781089],
+    [ 0.0380459 , -0.36577559,  0.81290758,  0.39122488,  0.22557723],
+    [-0.00584294,  0.06483369, -0.45591547,  0.67855926,  0.57224196],
+    [-4.55250983e-04,  1.31278706e-03,  7.68471741e-02, -6.12172124e-01, 7.86980223e-01]
+])
+
 @fortran_class
 class LateDE(DarkEnergyModel):
     """
@@ -65,12 +76,12 @@ class LateDE(DarkEnergyModel):
     def set_params(self, DEmodel, max_num_of_bins=0, z_knot=[], w_knot=[],
                      w0=-1, w1=-1, w2=-1, w3=-1, w4=-1, w5=-1, w6=-1, w7=-1, w8=-1, w9=-1,
                      z1=0.7, z2=1.4, z3=2.1, z4=2.8, z5=3.5, z6=4.2, z7=4.9, z8=5.6, z9=6.3, z10=7.0,
-                     sigma=0.1, C_0=0, C_1=0, C_2=0, C_3=0):
+                     sigma=0.1, C_0=0, C_1=0, C_2=0, C_3=0, alpha1=None, alpha2=None, alpha3=None, alpha4=None, alpha5=None):
 
         self.DEmodel=DEmodel
         self.max_num_of_bins=max_num_of_bins 
         self.z_knot=z_knot
-        self.w_knot=w_knot        
+        self.w_knot=w_knot
         self.w0=w0 
         self.w1=w1 
         self.w2=w2
@@ -96,6 +107,14 @@ class LateDE(DarkEnergyModel):
         self.C_1=C_1
         self.C_2=C_2
         self.C_3=C_3
+        if DEmodel == 5 and alpha1 is not None:
+            alphas = np.array([alpha1, alpha2, alpha3, alpha4, alpha5])
+            ws = -1*np.ones(5) + np.dot(PCs.T, alphas)
+            self.w0 = ws[0]
+            self.w1 = ws[1]
+            self.w2 = ws[2]
+            self.w3 = ws[3]
+            self.w4 = ws[4]
 @fortran_class
 class DarkEnergyPPF(LateDE):
     """
