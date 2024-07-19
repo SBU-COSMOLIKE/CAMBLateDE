@@ -143,7 +143,7 @@ class LateDE(DarkEnergyModel):
         elif DEmodel == 6 and alpha1 is not None:
             # Override with PC w
             alphas = np.array([alpha1, alpha2, alpha3, alpha4, alpha5, alpha6, alpha7, alpha8, alpha9, alpha10])
-            ws = -1*np.ones(10) + np.dot(PCs.T, alphas)
+            ws = -1*np.ones(10) + np.dot(PCs_10.T, alphas)
             self.w0 = ws[0]
             self.w1 = ws[1]
             self.w2 = ws[2]
