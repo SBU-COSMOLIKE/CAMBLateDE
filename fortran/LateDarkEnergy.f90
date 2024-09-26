@@ -1272,8 +1272,8 @@ module LateDE
                 grho_de = grho_de_today*(1.0_dl + 2.0_dl * (this%C_1 + this%C_3))
             end if
 
-        ! DHFS: Sum of tanh
-        else if (this%DEmodel == 17) then   
+        ! ! DHFS: Sum of tanh
+        else if (this%DEmodel == 20) then   
             if (z < this%z1+5.0*this%sigma) then
                 grho_de = grho_de_today * exp( 3.0_dl * Integrate_Romberg(this, kernel_tanh, 0.0_dl, z, 1d-5, 20, 100) ) 
             else 
@@ -1295,7 +1295,7 @@ module LateDE
             grho_de_today = State%grhov
         end select
         !DHFS MOD TANH START
-        if (this%DEmodel == 17) then
+        if (this%DEmodel == 17 .or. this%DEmodel == 20) then
             ! Numeric tanh
             Integrate_tanh = Integrate_Romberg(this, kernel_tanh, 0.0_dl, this%z1+5.0*this%sigma, 1d-5, 20, 100)
         end if
