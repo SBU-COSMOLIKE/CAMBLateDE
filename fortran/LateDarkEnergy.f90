@@ -537,8 +537,17 @@ module LateDE
         real(dl) :: kernel_tanh, w_de
         real(dl), intent(in) :: z
 
-        w_de = this%w0 + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) )
-        kernel_tanh = (1.0_dl + w_de) / (1.0_dl+z)
+        if (this%DEmodel == 17) then    
+            w_de = this%w0 + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) )
+            kernel_tanh = (1.0_dl + w_de) / (1.0_dl+z)
+        else if(this%DEmodel == 20) then     
+            w_de = (this%w0 + this%w1 + this%w2 + this%w3 + this%w4) &
+                 + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) ) &
+                 + (this%w2-this%w1)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) ) &
+                 + (this%w3-this%w2)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) ) &
+                 + (this%w4-this%w3)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) )
+            kernel_tanh = (1.0_dl + w_de) / (1.0_dl+z)
+        end if    
     end function kernel_tanh
     !DHFS MOD TANH END
 
@@ -1262,6 +1271,14 @@ module LateDE
             else
                 grho_de = grho_de_today*(1.0_dl + 2.0_dl * (this%C_1 + this%C_3))
             end if
+
+        ! DHFS: Sum of tanh
+        else if (this%DEmodel == 17) then   
+            if (z < this%z1+5.0*this%sigma) then
+                grho_de = grho_de_today * exp( 3.0_dl * Integrate_Romberg(this, kernel_tanh, 0.0_dl, z, 1d-5, 20, 100) ) 
+            else 
+                grho_de = grho_de_today *(z/(this%z1+5.0_dl*this%sigma))**(3.0_dl*(1.0_dl+this%w1)) * exp( 3.0_dl * Integrate_tanh ) 
+            end if              
         else 
             stop "[Late Fluid DE @TLateDE_grho_de] Invalid Dark Energy Model"
         end if
