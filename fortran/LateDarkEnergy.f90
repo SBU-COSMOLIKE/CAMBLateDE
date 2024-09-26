@@ -518,6 +518,14 @@ module LateDE
                 ! Delta = ?
                 w_de = -1.0_dl      
            end if
+
+        else if (this%DEmodel == 20) then 
+            ! Numeric tanh
+            w_de = (this%w0+ this%w1 + this%w2 + this%w3 + this%w4) &
+                 + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z - this%z1)/this%sigma) ) &
+                 + (this%w2-this%w1)/2._dl * ( 1.0_dl + tanh((z - this%z2)/this%sigma) ) &
+                 + (this%w3-this%w2)/2._dl * ( 1.0_dl + tanh((z - this%z3)/this%sigma) ) &
+                 + (this%w4-this%w3)/2._dl * ( 1.0_dl + tanh((z - this%z4)/this%sigma) )
         else        
             stop "[Late Fluid DE @TLateDE_w_de] Invalid Dark Energy Model"   
         end if
