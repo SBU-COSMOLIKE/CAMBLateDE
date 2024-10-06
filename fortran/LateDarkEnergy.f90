@@ -525,7 +525,8 @@ module LateDE
                          + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z - this%z1)/this%sigma) ) &
                          + (this%w2-this%w1)/2._dl * ( 1.0_dl + tanh((z - this%z2)/this%sigma) ) &
                          + (this%w3-this%w2)/2._dl * ( 1.0_dl + tanh((z - this%z3)/this%sigma) ) &
-                         + (this%w4-this%w3)/2._dl * ( 1.0_dl + tanh((z - this%z4)/this%sigma) )
+                         + (this%w4-this%w3)/2._dl * ( 1.0_dl + tanh((z - this%z4)/this%sigma) ) &
+                         + (-1.0_dl-this%w4)/2._dl * ( 1.0_dl + tanh((z - this%z5)/this%sigma) )
         else        
             stop "[Late Fluid DE @TLateDE_w_de] Invalid Dark Energy Model"   
         end if
@@ -539,14 +540,15 @@ module LateDE
 
         if (this%DEmodel == 17) then    
             w_de = this%w0 + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) )
-            kernel_tanh = (1.0_dl + w_de) / (1.0_dl+z)
+            kernel_tanh = (1.0_dl + w_de) / (1.0_dl + z)
         else if(this%DEmodel == 20) then     
             w_de = this%w0 &
                  + (this%w1-this%w0)/2._dl * ( 1.0_dl + tanh((z-this%z1)/this%sigma) ) &
                  + (this%w2-this%w1)/2._dl * ( 1.0_dl + tanh((z-this%z2)/this%sigma) ) &
                  + (this%w3-this%w2)/2._dl * ( 1.0_dl + tanh((z-this%z3)/this%sigma) ) &
-                 + (this%w4-this%w3)/2._dl * ( 1.0_dl + tanh((z-this%z4)/this%sigma) )
-            kernel_tanh = (1.0_dl + w_de) / (1.0_dl+z)
+                 + (this%w4-this%w3)/2._dl * ( 1.0_dl + tanh((z-this%z4)/this%sigma) ) &
+                 + (-1.0_dl-this%w4)/2._dl * ( 1.0_dl + tanh((z-this%z5)/this%sigma) )
+            kernel_tanh = (1.0_dl + w_de) / (1.0_dl + z)
         end if    
     end function kernel_tanh
     !DHFS MOD TANH END
@@ -1274,10 +1276,10 @@ module LateDE
 
         ! ! DHFS: Sum of tanh
         else if (this%DEmodel == 20) then   
-            if (z < this%z1+5.0*this%sigma) then
+            if (z < this%z5) then ! DHFS: this line is different from demodel=17, because we want to match demodel=5 in the last bin
                 grho_de = grho_de_today * exp( 3.0_dl * Integrate_Romberg(this, kernel_tanh, 0.0_dl, z, 1d-5, 20, 100) ) 
             else 
-                grho_de = grho_de_today *(z/(this%z1+5.0_dl*this%sigma))**(3.0_dl*(1.0_dl+(this%w4))) * exp( 3.0_dl * Integrate_tanh ) 
+                grho_de = grho_de_today * exp( 3.0_dl * Integrate_tanh ) 
             end if              
         else 
             stop "[Late Fluid DE @TLateDE_grho_de] Invalid Dark Energy Model"
@@ -1295,9 +1297,11 @@ module LateDE
             grho_de_today = State%grhov
         end select
         !DHFS MOD TANH START
-        if (this%DEmodel == 17 .or. this%DEmodel == 20) then
+        if (this%DEmodel == 17) then
             ! Numeric tanh
             Integrate_tanh = Integrate_Romberg(this, kernel_tanh, 0.0_dl, this%z1+5.0*this%sigma, 1d-5, 20, 100)
+        else if (this%DEmodel == 20) then    
+            Integrate_tanh = Integrate_Romberg(this, kernel_tanh, 0.0_dl, this%z5+5.0*this%sigma, 1d-5, 20, 100)
         end if
         !DHFS MOD TANH END        
     end subroutine TLateDE_Init
