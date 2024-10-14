@@ -1,6 +1,8 @@
 # CAMBLateDE - CAMB for Late Dark Energy
 Authors: Diogo Souza, Vivian Miranda, João Rebouças
 
+If you use this code, please cite arXiv 2408.14628
+
 This is a CAMB modification that implements parametrizations for the equation of state for late dark energy.
 The available parametrization are: 
 1) Constant w
