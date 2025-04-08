@@ -1311,6 +1311,28 @@ module LateDE
         use FileUtils
         class(TLateDE) :: this
         class(TIniFile), intent(in) :: Ini
+        this%DEmodel = Ini%Read_Int('DEmodel', 1)
+        this%w0 = Ini%Read_Double('w0', 0.0_dl)
+		this%w1 = Ini%Read_Double('w1', 0.0_dl)
+		this%w2 = Ini%Read_Double('w2', 0.0_dl)
+		this%w3 = Ini%Read_Double('w3', 0.0_dl)
+		this%w4 = Ini%Read_Double('w4', 0.0_dl)
+		this%w5 = Ini%Read_Double('w5', 0.0_dl)
+		this%w6 = Ini%Read_Double('w6', 0.0_dl)
+		this%w7 = Ini%Read_Double('w7', 0.0_dl)
+		this%w8 = Ini%Read_Double('w8', 0.0_dl)
+		this%w9 = Ini%Read_Double('w9', 0.0_dl)
+		this%z1 = Ini%Read_Double('z1', 0.0_dl)
+		this%z2 = Ini%Read_Double('z2', 0.0_dl)
+		this%z3 = Ini%Read_Double('z3', 0.0_dl)
+		this%z4 = Ini%Read_Double('z4', 0.0_dl)
+		this%z5 = Ini%Read_Double('z5', 0.0_dl)
+		this%z6 = Ini%Read_Double('z6', 0.0_dl)
+		this%z7 = Ini%Read_Double('z7', 0.0_dl)
+		this%z8 = Ini%Read_Double('z8', 0.0_dl)
+		this%z9 = Ini%Read_Double('z9', 0.0_dl)
+		this%z10 = Ini%Read_Double('z10', 0.0_dl)
+		this%sigma = Ini%Read_Double('sigma', 0.0_dl)
     end subroutine TLateDE_ReadParams
     
     subroutine TLateDE_PrintFeedback(this, FeedbackLevel)
